@@ -4,6 +4,9 @@ namespace DevProject.Domain.Tests.Models;
 
 public class ProjectTests
 {
+    #region Create Tests
+
+    #region Id Tests
     [Fact]
     public void Create_ShouldGenerateUniqueId()
     {
@@ -14,7 +17,9 @@ public class ProjectTests
         Assert.NotEqual(Guid.Empty, project2.Id);
         Assert.NotEqual(project1.Id, project2.Id);
     }
+    #endregion
 
+    #region Name Tests
     [Fact]
     public void Create_WithValidNameAndObjective_ShouldCreateProject()
     {
@@ -38,6 +43,18 @@ public class ProjectTests
         Assert.Throws<ArgumentException>(action);
     }
 
+    [Fact]
+    public void Create_WithNameContainingWhitespace_ShouldTrimName()
+    {
+        var name = "    My Project    ";
+
+        var project = new Project(name, "My Objective");
+
+        Assert.Equal("My Project", project.Name);
+    }
+    #endregion
+
+    #region Objective Tests
     [Theory]
     [InlineData("")]
     [InlineData(" ")]
@@ -50,16 +67,6 @@ public class ProjectTests
     }
 
     [Fact]
-    public void Create_WithNameContainingWhitespace_ShouldTrimName()
-    {
-        var name = "    My Project    ";
-
-        var project = new Project(name, "My Objective");
-
-        Assert.Equal("My Project", project.Name);
-    }
-
-    [Fact]
     public void Create_WithObjectiveContainingWhitespace_ShouldTrimObjective()
     {
         var objective = "   My Objective   ";
@@ -68,7 +75,9 @@ public class ProjectTests
 
         Assert.Equal("My Objective", project.Objective);
     }
+    #endregion
 
+    #region Motivation Tests
     [Fact]
     public void Create_WithoutMotivation_ShouldCreateProject()
     {
@@ -105,7 +114,9 @@ public class ProjectTests
 
         Assert.Equal("My Motivation", project.Motivation);
     }
+    #endregion
 
+    #region CreatedAt & UpdatedAt Tests
     [Fact]
     public void Create_ShouldSetCreationAndUpdateDates()
     {
@@ -114,7 +125,9 @@ public class ProjectTests
         Assert.NotEqual(default, project.CreatedAt);
         Assert.Equal(project.CreatedAt, project.UpdatedAt);
     }
+    #endregion
 
+    #region PlannedDates Tests
     [Fact]
     public void Create_WithPlannedDates_ShouldSetDates()
     {
@@ -151,6 +164,37 @@ public class ProjectTests
     }
 
     [Fact]
+    public void Create_WithOnlyStartDate_ShouldCreateProject()
+    {
+        var startDate = new DateOnly(2026, 10, 20);
+
+        var project = new Project(
+            "My Project",
+            "My Objective",
+            plannedStartDate: startDate);
+
+        Assert.Equal(startDate, project.PlannedStartDate);
+        Assert.Null(project.PlannedEndDate);
+    }
+
+    [Fact]
+    public void Create_WithOnlyEndDate_ShouldCreateProject()
+    {
+        var endDate = new DateOnly(2026, 10, 20);
+
+        var project = new Project("My Project", "My Objective", plannedEndDate: endDate);
+
+        Assert.Equal(endDate, project.PlannedEndDate);
+        Assert.Null(project.PlannedStartDate);
+    }
+    #endregion
+
+    #endregion
+
+    #region Update Tests
+
+    #region UpdateName
+    [Fact]
     public void UpdateName_WithValidName_ShouldUpdateName()
     {
         var project = new Project("My Project", "My Objective");
@@ -159,17 +203,6 @@ public class ProjectTests
         project.UpdateName(updatedName);
 
         Assert.Equal(updatedName, project.Name);
-    }
-
-    [Fact]
-    public void UpdateObjective_WithValidObjective_ShouldUpdateObjective()
-    {
-        var project = new Project("My Project", "My Objective");
-        var updatedObjective = "My Updated Objective";
-
-        project.UpdateObjective(updatedObjective);
-
-        Assert.Equal(updatedObjective, project.Objective);
     }
 
     [Theory]
@@ -181,19 +214,6 @@ public class ProjectTests
         var project = new Project("My Project", "My Objective");
 
         var action = () => project.UpdateName(name);
-
-        Assert.Throws<ArgumentException>(action);
-    }
-
-    [Theory]
-    [InlineData("")]
-    [InlineData(" ")]
-    [InlineData("   ")]
-    public void UpdateObjective_WithInvalidObjective_ShouldThrowException(string objective)
-    {
-        var project = new Project("My Project", "My Objective");
-
-        var action = () => project.UpdateObjective(objective);
 
         Assert.Throws<ArgumentException>(action);
     }
@@ -210,6 +230,31 @@ public class ProjectTests
     }
 
     [Fact]
+    public void UpdateName_WithInvalidName_ShouldNotUpdateUpdatedAt()
+    {
+        var project = new Project("My Project", "My Objective");
+        var updatedAt = project.UpdatedAt;
+
+        var action = () => project.UpdateName("");
+
+        Assert.Throws<ArgumentException>(action);
+        Assert.Equal(updatedAt, project.UpdatedAt);
+    }
+    #endregion
+
+    #region UpdateObjective
+    [Fact]
+    public void UpdateObjective_WithValidObjective_ShouldUpdateObjective()
+    {
+        var project = new Project("My Project", "My Objective");
+        var updatedObjective = "My Updated Objective";
+
+        project.UpdateObjective(updatedObjective);
+
+        Assert.Equal(updatedObjective, project.Objective);
+    }
+
+    [Fact]
     public void UpdateObjective_ShouldUpdateUpdatedAt()
     {
         var project = new Project("My Project", "My Objective");
@@ -220,6 +265,33 @@ public class ProjectTests
         Assert.True(updatedAt < project.UpdatedAt);
     }
 
+    [Theory]
+    [InlineData("")]
+    [InlineData(" ")]
+    [InlineData("   ")]
+    public void UpdateObjective_WithInvalidObjective_ShouldThrowException(string objective)
+    {
+        var project = new Project("My Project", "My Objective");
+
+        var action = () => project.UpdateObjective(objective);
+
+        Assert.Throws<ArgumentException>(action);
+    }
+
+    [Fact]
+    public void UpdateObjective_WithInvalidObjective_ShouldNotUpdateUpdatedAt()
+    {
+        var project = new Project("My Project", "My Objective");
+        var updatedAt = project.UpdatedAt;
+
+        var action = () => project.UpdateObjective("");
+
+        Assert.Throws<ArgumentException>(action);
+        Assert.Equal(updatedAt, project.UpdatedAt);
+    }
+    #endregion
+
+    #region UpdateMotivation
     [Fact]
     public void UpdateMotivation_ShouldUpdateMotivation()
     {
@@ -251,7 +323,9 @@ public class ProjectTests
 
         Assert.Null(project.Motivation);
     }
+    #endregion
 
+    #region UpdatePlannedDates
     [Fact]
     public void UpdatePlannedDates_WithValidDates_ShouldUpdateDates()
     {
@@ -306,4 +380,45 @@ public class ProjectTests
 
         Assert.True(updatedAt < project.UpdatedAt);
     }
+
+    [Fact]
+    public void UpdatePlannedDates_WithInvalidDates_ShouldNotUpdateUpdatedAt()
+    {
+        var project = new Project("My Project", "My Objective");
+        var updatedAt = project.UpdatedAt;
+        var invalidStart = new DateOnly(2026, 10, 20);
+        var invalidEnd = new DateOnly(2026, 10, 15);
+
+        var action = () => project.UpdatePlannedDates(invalidStart, invalidEnd);
+
+        Assert.Throws<ArgumentException>(action);
+        Assert.Equal(updatedAt, project.UpdatedAt);
+    }
+
+    [Fact]
+    public void UpdatePlannedDates_WithOnlyStartDate_ShouldUpdateProject()
+    {
+        var project = new Project("My Project", "My Objective");
+        var startDate = new DateOnly(2026, 10, 20);
+
+        project.UpdatePlannedDates(startDate, null);
+
+        Assert.Equal(startDate, project.PlannedStartDate);
+        Assert.Null(project.PlannedEndDate);
+    }
+
+    [Fact]
+    public void UpdatePlannedDates_WithOnlyEndDate_ShouldUpdateProject()
+    {
+        var project = new Project("My Project", "My Objective");
+        var endDate = new DateOnly(2026, 10, 20);
+
+        project.UpdatePlannedDates(null, endDate);
+
+        Assert.Equal(endDate, project.PlannedEndDate);
+        Assert.Null(project.PlannedStartDate);
+    }
+    #endregion
+
+    #endregion
 }
