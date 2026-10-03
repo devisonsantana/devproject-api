@@ -18,15 +18,13 @@ public class Project
         DateOnly? plannedStartDate = null,
         DateOnly? plannedEndDate = null)
     {
-        ValidateName(name);
-        ValidateObjective(objective);
         ValidatePlannedDates(plannedStartDate, plannedEndDate);
 
         var now = DateTimeOffset.UtcNow;
 
         Id = Guid.NewGuid();
-        Name = name.Trim();
-        Objective = objective.Trim();
+        Name = NormalizeRequiredText(name, nameof(name));
+        Objective = NormalizeRequiredText(objective, nameof(objective));
         Motivation = string.IsNullOrWhiteSpace(motivation) ? null : motivation.Trim();
         PlannedStartDate = plannedStartDate;
         PlannedEndDate = plannedEndDate;
@@ -36,17 +34,13 @@ public class Project
 
     public void UpdateName(string name)
     {
-        ValidateName(name);
-
-        Name = name.Trim();
+        Name = NormalizeRequiredText(name, nameof(name));
 
         UpdatedAt = DateTimeOffset.UtcNow;
     }
     public void UpdateObjective(string objective)
     {
-        ValidateObjective(objective);
-
-        Objective = objective.Trim();
+        Objective = NormalizeRequiredText(objective, nameof(objective));
 
         UpdatedAt = DateTimeOffset.UtcNow;
     }
@@ -67,16 +61,14 @@ public class Project
         UpdatedAt = DateTimeOffset.UtcNow;
     }
 
-    private static void ValidateName(string name)
-    {
-        if (string.IsNullOrWhiteSpace(name))
-            throw new ArgumentException("Project name cannot be empty.", nameof(name));
-    }
+    /* VALIDATION METHODS */
 
-    private static void ValidateObjective(string objective)
+    private static string NormalizeRequiredText(string value, string param)
     {
-        if (string.IsNullOrWhiteSpace(objective))
-            throw new ArgumentException("Project objective cannot be empty.", nameof(objective));
+        if (string.IsNullOrWhiteSpace(value))
+            throw new ArgumentException($"Project {param} cannot be empty.", param);
+
+        return value.Trim();
     }
 
     private static void ValidatePlannedDates(DateOnly? startDate, DateOnly? endDate)
