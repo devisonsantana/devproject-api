@@ -79,7 +79,7 @@ public class ProjectTests
     }
 
     [Fact]
-    public void Create_ShouldSetStatusPlanning()
+    public void Create_ShouldSetPlanningStatus()
     {
         var project = new Project("My Project", "My Objective");
 
