@@ -5,9 +5,7 @@ public class Project
     public Guid Id { get; private set; }
     public string Name { get; private set; }
     public string Objective { get; private set; }
-    public string? Description { get; private set; }
     public string? Motivation { get; private set; }
-    public ProjectStatus Status { get; private set; }
     public DateOnly? PlannedStartDate { get; private set; }
     public DateOnly? PlannedEndDate { get; private set; }
     public DateTimeOffset CreatedAt { get; private set; }
@@ -16,7 +14,6 @@ public class Project
     public Project(
         string name,
         string objective,
-        string? description = null,
         string? motivation = null,
         DateOnly? plannedStartDate = null,
         DateOnly? plannedEndDate = null)
@@ -25,14 +22,12 @@ public class Project
         ValidateObjective(objective);
         ValidatePlannedDates(plannedStartDate, plannedEndDate);
 
-        var now = DateTimeOffset.Now;
+        var now = DateTimeOffset.UtcNow;
 
         Id = Guid.NewGuid();
         Name = name.Trim();
         Objective = objective.Trim();
-        Description = description;
-        Motivation = motivation;
-        Status = ProjectStatus.Planning;
+        Motivation = string.IsNullOrWhiteSpace(motivation) ? null : motivation.Trim();
         PlannedStartDate = plannedStartDate;
         PlannedEndDate = plannedEndDate;
         CreatedAt = now;
@@ -45,7 +40,7 @@ public class Project
 
         Name = name.Trim();
 
-        UpdatedAt = DateTimeOffset.Now;
+        UpdatedAt = DateTimeOffset.UtcNow;
     }
     public void UpdateObjective(string objective)
     {
@@ -53,9 +48,15 @@ public class Project
 
         Objective = objective.Trim();
 
-        UpdatedAt = DateTimeOffset.Now;
+        UpdatedAt = DateTimeOffset.UtcNow;
     }
 
+    public void UpdateMotivation(string? motivation)
+    {
+        Motivation = string.IsNullOrWhiteSpace(motivation) ? null : motivation.Trim();
+
+        UpdatedAt = DateTimeOffset.UtcNow;
+    }
     public void UpdatePlannedDates(DateOnly? startDate, DateOnly? endDate)
     {
         ValidatePlannedDates(startDate, endDate);
@@ -63,7 +64,7 @@ public class Project
         PlannedStartDate = startDate;
         PlannedEndDate = endDate;
 
-        UpdatedAt = DateTimeOffset.Now;
+        UpdatedAt = DateTimeOffset.UtcNow;
     }
 
     private static void ValidateName(string name)
@@ -81,7 +82,8 @@ public class Project
     private static void ValidatePlannedDates(DateOnly? startDate, DateOnly? endDate)
     {
         if (startDate.HasValue && endDate.HasValue && startDate > endDate)
-            throw new ArgumentException("Planned end date cannot be before planned start date.", nameof(endDate));
+            throw new ArgumentException(
+                "Planned end date cannot be before planned start date.", nameof(endDate));
 
     }
 }

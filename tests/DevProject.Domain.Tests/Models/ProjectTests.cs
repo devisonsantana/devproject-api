@@ -5,7 +5,18 @@ namespace DevProject.Domain.Tests.Models;
 public class ProjectTests
 {
     [Fact]
-    public void Create_WithValidNameAndObjetive_ShouldCreateProject()
+    public void Create_ShouldGenerateUniqueId()
+    {
+        var project1 = new Project("My Project 1", "My Objective 1");
+        var project2 = new Project("My Project 2", "My Objective 2");
+
+        Assert.NotEqual(Guid.Empty, project1.Id);
+        Assert.NotEqual(Guid.Empty, project2.Id);
+        Assert.NotEqual(project1.Id, project2.Id);
+    }
+
+    [Fact]
+    public void Create_WithValidNameAndObjective_ShouldCreateProject()
     {
         string name = "My Project";
         string objective = "My Project Objective";
@@ -49,7 +60,7 @@ public class ProjectTests
     }
 
     [Fact]
-    public void Create_WithObjectiveContainingWhitespace_ShouldTrimName()
+    public void Create_WithObjectiveContainingWhitespace_ShouldTrimObjective()
     {
         var objective = "   My Objective   ";
 
@@ -59,14 +70,40 @@ public class ProjectTests
     }
 
     [Fact]
-    public void Create_ShouldGenerateUniqueId()
+    public void Create_WithoutMotivation_ShouldCreateProject()
     {
-        var project1 = new Project("My Project 1", "My Objective 1");
-        var project2 = new Project("My Project 2", "My Objective 2");
+        var project = new Project("My Project", "My Objective");
 
-        Assert.NotEqual(Guid.Empty, project1.Id);
-        Assert.NotEqual(Guid.Empty, project2.Id);
-        Assert.NotEqual(project1.Id, project2.Id);
+        Assert.Null(project.Motivation);
+    }
+
+    [Fact]
+    public void Create_WithMotivation_ShouldSetMotivation()
+    {
+        var motivation = "My Motivation";
+        var project = new Project("My Project", "My Objective", motivation);
+
+        Assert.Equal(motivation, project.Motivation);
+    }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData(" ")]
+    [InlineData("   ")]
+    public void Create_WithEmptyMotivation_ShouldStoreNull(string motivation)
+    {
+        var project = new Project("My Project", "My Objective", motivation);
+
+        Assert.Null(project.Motivation);
+    }
+
+    [Fact]
+    public void Create_WithMotivationContainingWhitespace_ShouldTrimMotivation()
+    {
+        var motivation = "   My Motivation   ";
+        var project = new Project("My Project", "My Objective", motivation);
+
+        Assert.Equal("My Motivation", project.Motivation);
     }
 
     [Fact]
@@ -76,14 +113,6 @@ public class ProjectTests
 
         Assert.NotEqual(default, project.CreatedAt);
         Assert.Equal(project.CreatedAt, project.UpdatedAt);
-    }
-
-    [Fact]
-    public void Create_ShouldSetPlanningStatus()
-    {
-        var project = new Project("My Project", "My Objective");
-
-        Assert.Equal(ProjectStatus.Planning, project.Status);
     }
 
     [Fact]
@@ -108,6 +137,17 @@ public class ProjectTests
             "My Project", "My Objective", plannedStartDate: plannedStartDate, plannedEndDate: plannedEndDate);
 
         Assert.Throws<ArgumentException>(action);
+    }
+
+    [Fact]
+    public void Create_WithSameStartAndEndDate_ShouldCreateProject()
+    {
+        var date = new DateOnly(2026, 10, 20);
+        var project = new Project(
+            "My Project", "My Objective", plannedStartDate: date, plannedEndDate: date);
+
+        Assert.Equal(date, project.PlannedStartDate);
+        Assert.Equal(date, project.PlannedEndDate);
     }
 
     [Fact]
@@ -166,7 +206,7 @@ public class ProjectTests
 
         project.UpdateName("My updated project");
 
-        Assert.True(updatedAt <= project.UpdatedAt);
+        Assert.True(updatedAt < project.UpdatedAt);
     }
 
     [Fact]
@@ -177,7 +217,39 @@ public class ProjectTests
 
         project.UpdateObjective("My updated objective");
 
-        Assert.True(updatedAt <= project.UpdatedAt);
+        Assert.True(updatedAt < project.UpdatedAt);
+    }
+
+    [Fact]
+    public void UpdateMotivation_ShouldUpdateMotivation()
+    {
+        var project = new Project("My Project", "My Objective");
+        var updatedMotivation = "My updated motivation";
+
+        project.UpdateMotivation(updatedMotivation);
+
+        Assert.Equal(updatedMotivation, project.Motivation);
+    }
+
+    [Fact]
+    public void UpdateMotivation_ShouldUpdateUpdatedAt()
+    {
+        var project = new Project("My Project", "My Objective");
+        var updatedAt = project.UpdatedAt;
+
+        project.UpdateMotivation("My updated motivation");
+
+        Assert.True(updatedAt < project.UpdatedAt);
+    }
+
+    [Fact]
+    public void UpdateMotivation_WithNull_ShouldRemoveMotivation()
+    {
+        var project = new Project("My Project", "My Objective", "My Motivation");
+
+        project.UpdateMotivation(null);
+
+        Assert.Null(project.Motivation);
     }
 
     [Fact]
@@ -185,7 +257,7 @@ public class ProjectTests
     {
         var project = new Project("My Project", "My Objective");
         var startDate = new DateOnly(2026, 10, 20);
-        var endDate = new DateOnly(2026, 10, 20);
+        var endDate = new DateOnly(2026, 10, 30);
 
         project.UpdatePlannedDates(startDate, endDate);
 
@@ -222,5 +294,16 @@ public class ProjectTests
         Assert.Throws<ArgumentException>(action);
         Assert.Equal(originalStartDate, project.PlannedStartDate);
         Assert.Equal(originalEndDate, project.PlannedEndDate);
+    }
+
+    [Fact]
+    public void UpdatePlannedDates_ShouldUpdateUpdatedAt()
+    {
+        var project = new Project("My Project", "My Objective");
+        var updatedAt = project.UpdatedAt;
+
+        project.UpdatePlannedDates(new DateOnly(2026, 10, 20), new DateOnly(2026, 10, 30));
+
+        Assert.True(updatedAt < project.UpdatedAt);
     }
 }
