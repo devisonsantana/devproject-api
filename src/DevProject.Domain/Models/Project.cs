@@ -10,14 +10,19 @@ public class Project
     public DateOnly? PlannedEndDate { get; private set; }
     public DateTimeOffset CreatedAt { get; private set; }
     public DateTimeOffset UpdatedAt { get; private set; }
+    public Guid OwnerId { get; private set; }
 
     public Project(
         string name,
         string objective,
+        Guid ownerId,
         string? motivation = null,
         DateOnly? plannedStartDate = null,
         DateOnly? plannedEndDate = null)
     {
+        if (ownerId.Equals(Guid.Empty))
+            throw new ArgumentException("Project ownerId cannot be empty", nameof(ownerId));
+
         ValidatePlannedDates(plannedStartDate, plannedEndDate);
 
         var now = DateTimeOffset.UtcNow;
@@ -30,6 +35,7 @@ public class Project
         PlannedEndDate = plannedEndDate;
         CreatedAt = now;
         UpdatedAt = now;
+        OwnerId = ownerId;
     }
 
     public void UpdateName(string name)

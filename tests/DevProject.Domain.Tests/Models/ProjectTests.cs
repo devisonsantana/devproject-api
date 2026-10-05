@@ -10,12 +10,30 @@ public class ProjectTests
     [Fact]
     public void Create_ShouldGenerateUniqueId()
     {
-        var project1 = new Project("My Project 1", "My Objective 1");
-        var project2 = new Project("My Project 2", "My Objective 2");
+        var project1 = new Project("My Project 1", "My Objective 1", Guid.NewGuid());
+        var project2 = new Project("My Project 2", "My Objective 2", Guid.NewGuid());
 
         Assert.NotEqual(Guid.Empty, project1.Id);
         Assert.NotEqual(Guid.Empty, project2.Id);
         Assert.NotEqual(project1.Id, project2.Id);
+    }
+
+    [Fact]
+    public void Create_WithValidOwnerId_ShouldSetOwnerId()
+    {
+        var ownerId = Guid.NewGuid();
+        var project = new Project("My Project", "My Objective", ownerId);
+
+        Assert.NotEqual(Guid.Empty, project.OwnerId);
+        Assert.Equal(ownerId, project.OwnerId);
+    }
+
+    [Fact]
+    public void Create_WithEmptyOwnerId_ShouldThrowException()
+    {
+        var action = () => new Project("My Project", "My Objective", Guid.Empty);
+
+        Assert.Throws<ArgumentException>(action);
     }
     #endregion
 
@@ -26,7 +44,7 @@ public class ProjectTests
         string name = "My Project";
         string objective = "My Project Objective";
 
-        var project = new Project(name, objective);
+        var project = new Project(name, objective, Guid.NewGuid());
 
         Assert.Equal(name, project.Name);
         Assert.Equal(objective, project.Objective);
@@ -38,7 +56,7 @@ public class ProjectTests
     [InlineData("   ")]
     public void Create_WithInvalidName_ShouldThrowException(string name)
     {
-        var action = () => new Project(name, "My Objective");
+        var action = () => new Project(name, "My Objective", Guid.NewGuid());
 
         Assert.Throws<ArgumentException>(action);
     }
@@ -48,7 +66,7 @@ public class ProjectTests
     {
         var name = "    My Project    ";
 
-        var project = new Project(name, "My Objective");
+        var project = new Project(name, "My Objective", Guid.NewGuid());
 
         Assert.Equal("My Project", project.Name);
     }
@@ -61,7 +79,7 @@ public class ProjectTests
     [InlineData("   ")]
     public void Create_WithInvalidObjective_ShouldThrowException(string objective)
     {
-        var action = () => new Project("My Project", objective);
+        var action = () => new Project("My Project", objective, Guid.NewGuid());
 
         Assert.Throws<ArgumentException>(action);
     }
@@ -71,7 +89,7 @@ public class ProjectTests
     {
         var objective = "   My Objective   ";
 
-        var project = new Project("My Project", objective);
+        var project = new Project("My Project", objective, Guid.NewGuid());
 
         Assert.Equal("My Objective", project.Objective);
     }
@@ -81,7 +99,7 @@ public class ProjectTests
     [Fact]
     public void Create_WithoutMotivation_ShouldCreateProject()
     {
-        var project = new Project("My Project", "My Objective");
+        var project = new Project("My Project", "My Objective", Guid.NewGuid());
 
         Assert.Null(project.Motivation);
     }
@@ -90,7 +108,7 @@ public class ProjectTests
     public void Create_WithMotivation_ShouldSetMotivation()
     {
         var motivation = "My Motivation";
-        var project = new Project("My Project", "My Objective", motivation);
+        var project = new Project("My Project", "My Objective", Guid.NewGuid(), motivation);
 
         Assert.Equal(motivation, project.Motivation);
     }
@@ -101,7 +119,7 @@ public class ProjectTests
     [InlineData("   ")]
     public void Create_WithEmptyMotivation_ShouldStoreNull(string motivation)
     {
-        var project = new Project("My Project", "My Objective", motivation);
+        var project = new Project("My Project", "My Objective", Guid.NewGuid(), motivation);
 
         Assert.Null(project.Motivation);
     }
@@ -110,7 +128,7 @@ public class ProjectTests
     public void Create_WithMotivationContainingWhitespace_ShouldTrimMotivation()
     {
         var motivation = "   My Motivation   ";
-        var project = new Project("My Project", "My Objective", motivation);
+        var project = new Project("My Project", "My Objective", Guid.NewGuid(), motivation);
 
         Assert.Equal("My Motivation", project.Motivation);
     }
@@ -120,7 +138,7 @@ public class ProjectTests
     [Fact]
     public void Create_ShouldSetCreationAndUpdateDates()
     {
-        var project = new Project("My Project", "My Objective");
+        var project = new Project("My Project", "My Objective", Guid.NewGuid());
 
         Assert.NotEqual(default, project.CreatedAt);
         Assert.Equal(project.CreatedAt, project.UpdatedAt);
@@ -134,7 +152,7 @@ public class ProjectTests
         var plannedStartDate = new DateOnly(2026, 10, 9);
         var plannedEndDate = new DateOnly(2026, 11, 2);
 
-        var project = new Project("My Project", "My Objective", plannedStartDate: plannedStartDate, plannedEndDate: plannedEndDate);
+        var project = new Project("My Project", "My Objective", Guid.NewGuid(), plannedStartDate: plannedStartDate, plannedEndDate: plannedEndDate);
 
         Assert.Equal(plannedStartDate, project.PlannedStartDate);
         Assert.Equal(plannedEndDate, project.PlannedEndDate);
@@ -147,7 +165,11 @@ public class ProjectTests
         var plannedEndDate = new DateOnly(2026, 10, 19);
 
         var action = () => new Project(
-            "My Project", "My Objective", plannedStartDate: plannedStartDate, plannedEndDate: plannedEndDate);
+                            "My Project",
+                            "My Objective",
+                            Guid.NewGuid(),
+                            plannedStartDate: plannedStartDate,
+                            plannedEndDate: plannedEndDate);
 
         Assert.Throws<ArgumentException>(action);
     }
@@ -157,7 +179,11 @@ public class ProjectTests
     {
         var date = new DateOnly(2026, 10, 20);
         var project = new Project(
-            "My Project", "My Objective", plannedStartDate: date, plannedEndDate: date);
+                            "My Project",
+                            "My Objective",
+                            Guid.NewGuid(),
+                            plannedStartDate: date,
+                            plannedEndDate: date);
 
         Assert.Equal(date, project.PlannedStartDate);
         Assert.Equal(date, project.PlannedEndDate);
@@ -169,9 +195,10 @@ public class ProjectTests
         var startDate = new DateOnly(2026, 10, 20);
 
         var project = new Project(
-            "My Project",
-            "My Objective",
-            plannedStartDate: startDate);
+                        "My Project",
+                        "My Objective",
+                        Guid.NewGuid(),
+                        plannedStartDate: startDate);
 
         Assert.Equal(startDate, project.PlannedStartDate);
         Assert.Null(project.PlannedEndDate);
@@ -182,7 +209,7 @@ public class ProjectTests
     {
         var endDate = new DateOnly(2026, 10, 20);
 
-        var project = new Project("My Project", "My Objective", plannedEndDate: endDate);
+        var project = new Project("My Project", "My Objective", Guid.NewGuid(), plannedEndDate: endDate);
 
         Assert.Equal(endDate, project.PlannedEndDate);
         Assert.Null(project.PlannedStartDate);
@@ -197,7 +224,7 @@ public class ProjectTests
     [Fact]
     public void UpdateName_WithValidName_ShouldUpdateName()
     {
-        var project = new Project("My Project", "My Objective");
+        var project = new Project("My Project", "My Objective", Guid.NewGuid());
         var updatedName = "My Updated Project";
 
         project.UpdateName(updatedName);
@@ -211,7 +238,7 @@ public class ProjectTests
     [InlineData("   ")]
     public void UpdateName_WithInvalidName_ShouldThrowException(string name)
     {
-        var project = new Project("My Project", "My Objective");
+        var project = new Project("My Project", "My Objective", Guid.NewGuid());
 
         var action = () => project.UpdateName(name);
 
@@ -221,7 +248,7 @@ public class ProjectTests
     [Fact]
     public void UpdateName_ShouldUpdateUpdatedAt()
     {
-        var project = new Project("My Project", "My Objective");
+        var project = new Project("My Project", "My Objective", Guid.NewGuid());
         var updatedAt = project.UpdatedAt;
 
         project.UpdateName("My updated project");
@@ -232,7 +259,7 @@ public class ProjectTests
     [Fact]
     public void UpdateName_WithInvalidName_ShouldNotUpdateUpdatedAt()
     {
-        var project = new Project("My Project", "My Objective");
+        var project = new Project("My Project", "My Objective", Guid.NewGuid());
         var updatedAt = project.UpdatedAt;
 
         var action = () => project.UpdateName("");
@@ -246,7 +273,7 @@ public class ProjectTests
     [Fact]
     public void UpdateObjective_WithValidObjective_ShouldUpdateObjective()
     {
-        var project = new Project("My Project", "My Objective");
+        var project = new Project("My Project", "My Objective", Guid.NewGuid());
         var updatedObjective = "My Updated Objective";
 
         project.UpdateObjective(updatedObjective);
@@ -257,7 +284,7 @@ public class ProjectTests
     [Fact]
     public void UpdateObjective_ShouldUpdateUpdatedAt()
     {
-        var project = new Project("My Project", "My Objective");
+        var project = new Project("My Project", "My Objective", Guid.NewGuid());
         var updatedAt = project.UpdatedAt;
 
         project.UpdateObjective("My updated objective");
@@ -271,7 +298,7 @@ public class ProjectTests
     [InlineData("   ")]
     public void UpdateObjective_WithInvalidObjective_ShouldThrowException(string objective)
     {
-        var project = new Project("My Project", "My Objective");
+        var project = new Project("My Project", "My Objective", Guid.NewGuid());
 
         var action = () => project.UpdateObjective(objective);
 
@@ -281,7 +308,7 @@ public class ProjectTests
     [Fact]
     public void UpdateObjective_WithInvalidObjective_ShouldNotUpdateUpdatedAt()
     {
-        var project = new Project("My Project", "My Objective");
+        var project = new Project("My Project", "My Objective", Guid.NewGuid());
         var updatedAt = project.UpdatedAt;
 
         var action = () => project.UpdateObjective("");
@@ -295,7 +322,7 @@ public class ProjectTests
     [Fact]
     public void UpdateMotivation_ShouldUpdateMotivation()
     {
-        var project = new Project("My Project", "My Objective");
+        var project = new Project("My Project", "My Objective", Guid.NewGuid());
         var updatedMotivation = "My updated motivation";
 
         project.UpdateMotivation(updatedMotivation);
@@ -306,7 +333,7 @@ public class ProjectTests
     [Fact]
     public void UpdateMotivation_ShouldUpdateUpdatedAt()
     {
-        var project = new Project("My Project", "My Objective");
+        var project = new Project("My Project", "My Objective", Guid.NewGuid());
         var updatedAt = project.UpdatedAt;
 
         project.UpdateMotivation("My updated motivation");
@@ -317,7 +344,7 @@ public class ProjectTests
     [Fact]
     public void UpdateMotivation_WithNull_ShouldRemoveMotivation()
     {
-        var project = new Project("My Project", "My Objective", "My Motivation");
+        var project = new Project("My Project", "My Objective", Guid.NewGuid(), "My Motivation");
 
         project.UpdateMotivation(null);
 
@@ -329,7 +356,7 @@ public class ProjectTests
     [Fact]
     public void UpdatePlannedDates_WithValidDates_ShouldUpdateDates()
     {
-        var project = new Project("My Project", "My Objective");
+        var project = new Project("My Project", "My Objective", Guid.NewGuid());
         var startDate = new DateOnly(2026, 10, 20);
         var endDate = new DateOnly(2026, 10, 30);
 
@@ -344,7 +371,7 @@ public class ProjectTests
     public void UpdatePlannedDates_WithInvalidDates_ShouldThrowException()
     {
 
-        var project = new Project("My Project", "My Objective");
+        var project = new Project("My Project", "My Objective", Guid.NewGuid());
         var updatedStartDate = new DateOnly(2026, 10, 20);
         var updatedEndDate = new DateOnly(2026, 10, 19);
 
@@ -359,7 +386,11 @@ public class ProjectTests
         var originalStartDate = new DateOnly(2026, 10, 20);
         var originalEndDate = new DateOnly(2026, 10, 29);
         var project = new Project(
-            "My Project", "My Objective", plannedStartDate: originalStartDate, plannedEndDate: originalEndDate);
+                        "My Project",
+                        "My Objective",
+                        Guid.NewGuid(),
+                        plannedStartDate: originalStartDate,
+                        plannedEndDate: originalEndDate);
         var invalidStart = new DateOnly(2026, 10, 20);
         var invalidEnd = new DateOnly(2026, 10, 15);
 
@@ -373,7 +404,7 @@ public class ProjectTests
     [Fact]
     public void UpdatePlannedDates_ShouldUpdateUpdatedAt()
     {
-        var project = new Project("My Project", "My Objective");
+        var project = new Project("My Project", "My Objective", Guid.NewGuid());
         var updatedAt = project.UpdatedAt;
 
         project.UpdatePlannedDates(new DateOnly(2026, 10, 20), new DateOnly(2026, 10, 30));
@@ -384,7 +415,7 @@ public class ProjectTests
     [Fact]
     public void UpdatePlannedDates_WithInvalidDates_ShouldNotUpdateUpdatedAt()
     {
-        var project = new Project("My Project", "My Objective");
+        var project = new Project("My Project", "My Objective", Guid.NewGuid());
         var updatedAt = project.UpdatedAt;
         var invalidStart = new DateOnly(2026, 10, 20);
         var invalidEnd = new DateOnly(2026, 10, 15);
@@ -398,7 +429,7 @@ public class ProjectTests
     [Fact]
     public void UpdatePlannedDates_WithOnlyStartDate_ShouldUpdateProject()
     {
-        var project = new Project("My Project", "My Objective");
+        var project = new Project("My Project", "My Objective", Guid.NewGuid());
         var startDate = new DateOnly(2026, 10, 20);
 
         project.UpdatePlannedDates(startDate, null);
@@ -410,7 +441,7 @@ public class ProjectTests
     [Fact]
     public void UpdatePlannedDates_WithOnlyEndDate_ShouldUpdateProject()
     {
-        var project = new Project("My Project", "My Objective");
+        var project = new Project("My Project", "My Objective", Guid.NewGuid());
         var endDate = new DateOnly(2026, 10, 20);
 
         project.UpdatePlannedDates(null, endDate);
