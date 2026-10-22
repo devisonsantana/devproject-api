@@ -1,0 +1,15 @@
+namespace DevProject.Domain.Entities;
+
+public abstract class Entity
+{
+    public Guid Id { get; private set; }
+    public DateTimeOffset CreatedAt { get; private set; }
+    public DateTimeOffset? UpdatedAt { get; private set; }
+    protected void UpdateTimestamp() => UpdatedAt = DateTimeOffset.UtcNow;
+
+    protected Entity()
+    {
+        Id = Guid.NewGuid();
+        CreatedAt = DateTimeOffset.UtcNow;
+    }
+}
