@@ -9,7 +9,7 @@ public sealed class Feature : Entity
     public string? Description { get; private set; }
     public FeatureStatus Status { get; private set; }
     public int Order { get; private set; }
-    public ICollection<ProjectTask> Tasks = [];
+    public ICollection<ProjectTask> Tasks { get; private set; } = [];
 
     private Feature()
     {

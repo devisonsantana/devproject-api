@@ -2,6 +2,12 @@ namespace DevProject.Domain.Entities;
 
 public sealed class User : Entity
 {
+    public string Name { get; private set; } = string.Empty;
+    public string Email { get; private set; } = string.Empty;
+    public string NormalizedEmail { get; private set; } = string.Empty;
+    public string PasswordHash { get; private set; } = string.Empty;
+    public bool IsActive { get; private set; }
+
     private User()
     {
     }
@@ -14,16 +20,6 @@ public sealed class User : Entity
         PasswordHash = NormalizeRequired(passwordHash, nameof(passwordHash));
         IsActive = true;
     }
-
-    public string Name { get; private set; } = string.Empty;
-
-    public string Email { get; private set; } = string.Empty;
-
-    public string NormalizedEmail { get; private set; } = string.Empty;
-
-    public string PasswordHash { get; private set; } = string.Empty;
-
-    public bool IsActive { get; private set; }
 
     public void UpdateProfile(string name, string email)
     {

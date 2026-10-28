@@ -7,7 +7,7 @@ public sealed class Project : Entity
     public string Name { get; private set; } = string.Empty;
     public string? Description { get; private set; }
     public ProjectStatus Status { get; private set; }
-    public ICollection<Feature> Features = [];
+    public ICollection<Feature> Features { get; private set; } = [];
 
     private Project()
     {

@@ -36,7 +36,7 @@ public sealed class ProjectTask : Entity
         Status = ProjectTaskStatus.Todo;
         Priority = Enum.IsDefined(priority)
             ? priority
-            : throw new ArgumentOutOfRangeException(nameof(priority));
+            : throw new ArgumentException(nameof(priority));
         DueDate = dueDate;
         Order = order;
     }
