@@ -24,7 +24,7 @@ public sealed class ProjectConfiguration : IEntityTypeConfiguration<Project>
         builder.HasMany(project => project.Features)
             .WithOne()
             .HasForeignKey(feature => feature.ProjectId)
-            .OnDelete(DeleteBehavior.Restrict);
+            .OnDelete(DeleteBehavior.Cascade);
         builder.Navigation(project => project.Features)
             .UsePropertyAccessMode(PropertyAccessMode.Field);
 

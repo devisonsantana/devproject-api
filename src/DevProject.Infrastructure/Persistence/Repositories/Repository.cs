@@ -9,7 +9,7 @@ public abstract class Repository<T> : IRepository<T> where T : Entity
 {
     protected readonly AppDbContext Context;
 
-    public Repository(AppDbContext context)
+    protected Repository(AppDbContext context)
     {
         Context = context;
     }
@@ -23,7 +23,7 @@ public abstract class Repository<T> : IRepository<T> where T : Entity
     public async Task<int> GetCountAsync(CancellationToken cancellationToken = default)
         => await Context.Set<T>().CountAsync(cancellationToken);
 
-    public void Create(T entity)
+    public void Add(T entity)
     {
         Context.Add(entity);
     }

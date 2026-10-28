@@ -25,7 +25,7 @@ public sealed class FeatureConfiguration : IEntityTypeConfiguration<Feature>
         builder.HasMany(feature => feature.Tasks)
             .WithOne()
             .HasForeignKey(task => task.FeatureId)
-            .OnDelete(DeleteBehavior.Restrict);
+            .OnDelete(DeleteBehavior.Cascade);
         builder.Navigation(feature => feature.Tasks)
             .UsePropertyAccessMode(PropertyAccessMode.Field);
 
