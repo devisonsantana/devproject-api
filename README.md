@@ -37,7 +37,6 @@ below.
 - [Tests and CI](#tests-and-ci)
 - [Known issues, inconsistencies, and missing features](#known-issues-inconsistencies-and-missing-features)
 - [Apresentação em português](#portugues)
-- [Problemas e funcionalidades pendentes](#problemas-e-funcionalidades-pendentes)
 
 ### Capabilities
 
@@ -272,7 +271,7 @@ descritos a seguir.
 - [Swagger UI](#swagger-ui-1)
 - [Testes e CI](#testes-e-ci-1)
 - [Falhas, inconsistências e funcionalidades pendentes](#problemas-e-funcionalidades-pendentes)
-- [English](#english)
+- [English presentation](#english)
 
 <a id="funcionalidades-atuais"></a>
 
