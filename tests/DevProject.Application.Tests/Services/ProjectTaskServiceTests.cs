@@ -1,7 +1,9 @@
 using DevProject.Application.DTOs.Tasks;
 using DevProject.Application.Interfaces.Mappers;
+using DevProject.Application.Queries.Tasks;
 using DevProject.Application.Services;
 using DevProject.Domain.Entities;
+using DevProject.Domain.Enums;
 using DevProject.Domain.Interfaces;
 using Moq;
 
@@ -73,6 +75,41 @@ public sealed class ProjectTaskServiceTests
         {
             _mapper.Verify(mapper => mapper.ToResponse(task), Times.Once);
         }
+    }
+
+    [Fact]
+    public async Task SearchAsync_forwards_filters_and_maps_tasks()
+    {
+        var projectId = Guid.NewGuid();
+        var featureId = Guid.NewGuid();
+        var query = new ProjectTaskSearchQuery(
+            projectId,
+            featureId,
+            "login",
+            ProjectTaskStatus.Blocked,
+            TaskPriority.High);
+        var task = new ProjectTask(featureId, "Implement login");
+        var response = CreateResponse(task);
+        _repository.Setup(repository => repository.GetFilteredAsync(
+                projectId,
+                featureId,
+                "login",
+                ProjectTaskStatus.Blocked,
+                TaskPriority.High,
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync([task]);
+        _mapper.Setup(mapper => mapper.ToResponse(task)).Returns(response);
+
+        var result = (await _service.SearchAsync(query)).ToArray();
+
+        Assert.Equal([response], result);
+        _repository.Verify(repository => repository.GetFilteredAsync(
+            projectId,
+            featureId,
+            "login",
+            ProjectTaskStatus.Blocked,
+            TaskPriority.High,
+            It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Fact]

@@ -76,6 +76,29 @@ public sealed class FeatureRepositoryTests(DatabaseFixture database) : Repositor
     }
 
     [Fact]
+    public async Task GetFilteredAsync_FiltersByProjectNameAndStatus()
+    {
+        var project = new Project("Project");
+        var otherProject = new Project("Other project");
+        var matchingFeature = new Feature(project.Id, "Authentication");
+        matchingFeature.ChangeStatus(FeatureStatus.InProgress);
+        var wrongStatus = new Feature(project.Id, "Auth archive");
+        var wrongProject = new Feature(otherProject.Id, "Authentication");
+        wrongProject.ChangeStatus(FeatureStatus.InProgress);
+        await SeedAsync(project, matchingFeature, wrongStatus);
+        await SeedAsync(otherProject, wrongProject);
+
+        await using var context = CreateContext();
+        var result = (await CreateFeatureRepository(context).GetFilteredAsync(
+            project.Id,
+            "AUTH",
+            FeatureStatus.InProgress)).ToArray();
+
+        var feature = Assert.Single(result);
+        Assert.Equal(matchingFeature.Id, feature.Id);
+    }
+
+    [Fact]
     public async Task Update_PersistsChangesMadeToFeature()
     {
         var project = new Project("Project");

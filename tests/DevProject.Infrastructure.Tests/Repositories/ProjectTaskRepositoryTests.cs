@@ -89,6 +89,37 @@ public sealed class ProjectTaskRepositoryTests(DatabaseFixture database) : Repos
     }
 
     [Fact]
+    public async Task GetFilteredAsync_FiltersByProjectTextStatusAndPriority()
+    {
+        var project = new Project("Project");
+        var feature = new Feature(project.Id, "Feature");
+        var otherProject = new Project("Other project");
+        var otherFeature = new Feature(otherProject.Id, "Feature");
+        var matchingTask = new ProjectTask(
+            feature.Id,
+            "Implement login",
+            "Authentication",
+            TaskPriority.High);
+        matchingTask.ChangeStatus(ProjectTaskStatus.Blocked);
+        var wrongStatus = new ProjectTask(feature.Id, "Implement login", priority: TaskPriority.High);
+        var wrongProject = new ProjectTask(otherFeature.Id, "Implement login", priority: TaskPriority.High);
+        wrongProject.ChangeStatus(ProjectTaskStatus.Blocked);
+        await SeedAsync(project, feature, matchingTask, wrongStatus);
+        await SeedAsync(otherProject, otherFeature, wrongProject);
+
+        await using var context = CreateContext();
+        var result = (await CreateTaskRepository(context).GetFilteredAsync(
+            project.Id,
+            null,
+            "LOGIN",
+            ProjectTaskStatus.Blocked,
+            TaskPriority.High)).ToArray();
+
+        var task = Assert.Single(result);
+        Assert.Equal(matchingTask.Id, task.Id);
+    }
+
+    [Fact]
     public async Task Update_PersistsChangesMadeToTask()
     {
         var project = new Project("Project");

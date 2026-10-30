@@ -1,7 +1,9 @@
 using DevProject.Application.DTOs.Projects;
 using DevProject.Application.Interfaces.Mappers;
+using DevProject.Application.Queries.Projects;
 using DevProject.Application.Services;
 using DevProject.Domain.Entities;
+using DevProject.Domain.Enums;
 using DevProject.Domain.Interfaces;
 using Moq;
 
@@ -116,6 +118,31 @@ public sealed class ProjectServiceTests
             x => x.GetAllAsync(It.IsAny<CancellationToken>()),
             Times.Once
         );
+    }
+
+    [Fact]
+    public async Task SearchAsync_ShouldForwardFiltersAndMapProjects()
+    {
+        var query = new ProjectSearchQuery("platform", ProjectStatus.Active);
+        var project = new Project("Platform");
+        project.ChangeStatus(ProjectStatus.Active);
+        _repositoryMock
+            .Setup(repository => repository.GetFilteredAsync(
+                query.Name,
+                query.Status,
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync([project]);
+        var response = CreateResponse(project);
+        _mapperMock.Setup(mapper => mapper.ToResponse(project)).Returns(response);
+
+        var result = (await _service.SearchAsync(query)).ToArray();
+
+        Assert.Single(result);
+        Assert.Equal(response, result[0]);
+        _repositoryMock.Verify(repository => repository.GetFilteredAsync(
+            "platform",
+            ProjectStatus.Active,
+            It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Fact]

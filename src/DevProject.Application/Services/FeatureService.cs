@@ -1,6 +1,7 @@
 using DevProject.Application.DTOs.Features;
 using DevProject.Application.Interfaces;
 using DevProject.Application.Interfaces.Mappers;
+using DevProject.Application.Queries.Features;
 using DevProject.Domain.Interfaces;
 
 namespace DevProject.Application.Services;
@@ -29,6 +30,21 @@ public sealed class FeatureService(
         CancellationToken cancellationToken = default)
     {
         var features = await _repository.GetAllAsync(cancellationToken);
+
+        return features.Select(_mapper.ToResponse).ToArray();
+    }
+
+    public async Task<IEnumerable<FeatureResponse>> SearchAsync(
+        FeatureSearchQuery query,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(query);
+
+        var features = await _repository.GetFilteredAsync(
+            query.ProjectId,
+            query.Name,
+            query.Status,
+            cancellationToken);
 
         return features.Select(_mapper.ToResponse).ToArray();
     }

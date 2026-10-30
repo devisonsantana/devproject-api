@@ -1,6 +1,7 @@
 using DevProject.Application.DTOs.Tasks;
 using DevProject.Application.Interfaces;
 using DevProject.Application.Interfaces.Mappers;
+using DevProject.Application.Queries.Tasks;
 using DevProject.Domain.Interfaces;
 
 namespace DevProject.Application.Services;
@@ -29,6 +30,23 @@ public sealed class ProjectTaskService(
         CancellationToken cancellationToken = default)
     {
         var tasks = await _repository.GetAllAsync(cancellationToken);
+
+        return tasks.Select(_mapper.ToResponse).ToArray();
+    }
+
+    public async Task<IEnumerable<ProjectTaskResponse>> SearchAsync(
+        ProjectTaskSearchQuery query,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(query);
+
+        var tasks = await _repository.GetFilteredAsync(
+            query.ProjectId,
+            query.FeatureId,
+            query.Search,
+            query.Status,
+            query.Priority,
+            cancellationToken);
 
         return tasks.Select(_mapper.ToResponse).ToArray();
     }

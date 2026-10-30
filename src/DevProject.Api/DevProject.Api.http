@@ -1,0 +1,71 @@
+@baseUrl = http://localhost:5001
+@projectId = 11111111-1111-1111-1111-111111111111
+@featureId = 22222222-2222-2222-2222-222222222222
+@projectTaskId = 33333333-3333-3333-3333-333333333333
+
+### List projects with filters
+GET {{baseUrl}}/api/projects?name=dev&status=Active
+
+### Get a project
+GET {{baseUrl}}/api/projects/{{projectId}}
+
+### Create a project
+POST {{baseUrl}}/api/projects
+Content-Type: application/json
+
+{
+  "name": "DevProject",
+  "description": "Project management API"
+}
+
+### Update a project
+PUT {{baseUrl}}/api/projects/{{projectId}}
+Content-Type: application/json
+
+{
+  "name": "Updated DevProject",
+  "description": "Updated project description"
+}
+
+### Delete a project
+DELETE {{baseUrl}}/api/projects/{{projectId}}
+
+### Filter features
+GET {{baseUrl}}/api/features?projectId={{projectId}}&status=InProgress&name=login
+
+### Create a feature for a project
+POST {{baseUrl}}/api/projects/{{projectId}}/features
+Content-Type: application/json
+
+{
+  "name": "Authentication",
+  "description": "User authentication",
+  "order": 1
+}
+
+### Filter tasks
+GET {{baseUrl}}/api/tasks?projectId={{projectId}}&featureId={{featureId}}&status=Todo&priority=High&search=login
+
+### Create a task for a feature
+POST {{baseUrl}}/api/features/{{featureId}}/tasks
+Content-Type: application/json
+
+{
+  "title": "Implement login",
+  "description": "Add the login flow",
+  "priority": "High",
+  "order": 1
+}
+
+### Register a user
+POST {{baseUrl}}/api/users
+Content-Type: application/json
+
+{
+  "name": "Developer",
+  "email": "developer@example.com",
+  "password": "replace-with-a-secure-password"
+}
+
+### Swagger UI
+GET {{baseUrl}}/swagger

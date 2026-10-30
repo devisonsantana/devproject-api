@@ -115,6 +115,25 @@ public sealed class ProjectRepositoryTests(DatabaseFixture database) : Repositor
     }
 
     [Fact]
+    public async Task GetFilteredAsync_FiltersNameCaseInsensitivelyAndByStatus()
+    {
+        var matchingProject = new Project("Alpha Platform");
+        matchingProject.ChangeStatus(ProjectStatus.Active);
+        var wrongStatus = new Project("Alpha archive");
+        var wrongName = new Project("Beta");
+        wrongName.ChangeStatus(ProjectStatus.Active);
+        await SeedAsync(matchingProject, wrongStatus, wrongName);
+
+        await using var context = CreateContext();
+        var result = (await CreateProjectRepository(context).GetFilteredAsync(
+            "PLATFORM",
+            ProjectStatus.Active)).ToArray();
+
+        var project = Assert.Single(result);
+        Assert.Equal(matchingProject.Id, project.Id);
+    }
+
+    [Fact]
     public async Task GetCountAsync_ReturnsNumberOfRows()
     {
         await SeedAsync(new Project("One"), new Project("Two"), new Project("Three"));

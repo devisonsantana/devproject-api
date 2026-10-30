@@ -1,7 +1,9 @@
 using DevProject.Application.DTOs.Features;
 using DevProject.Application.Interfaces.Mappers;
+using DevProject.Application.Queries.Features;
 using DevProject.Application.Services;
 using DevProject.Domain.Entities;
+using DevProject.Domain.Enums;
 using DevProject.Domain.Interfaces;
 using Moq;
 
@@ -73,6 +75,31 @@ public sealed class FeatureServiceTests
         {
             _mapper.Verify(mapper => mapper.ToResponse(feature), Times.Once);
         }
+    }
+
+    [Fact]
+    public async Task SearchAsync_forwards_filters_and_maps_features()
+    {
+        var projectId = Guid.NewGuid();
+        var query = new FeatureSearchQuery(projectId, "auth", FeatureStatus.InProgress);
+        var feature = new Feature(projectId, "Authentication");
+        var response = CreateResponse(feature);
+        _repository.Setup(repository => repository.GetFilteredAsync(
+                projectId,
+                "auth",
+                FeatureStatus.InProgress,
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync([feature]);
+        _mapper.Setup(mapper => mapper.ToResponse(feature)).Returns(response);
+
+        var result = (await _service.SearchAsync(query)).ToArray();
+
+        Assert.Equal([response], result);
+        _repository.Verify(repository => repository.GetFilteredAsync(
+            projectId,
+            "auth",
+            FeatureStatus.InProgress,
+            It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Fact]

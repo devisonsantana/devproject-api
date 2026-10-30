@@ -1,4 +1,5 @@
 using DevProject.Application.DTOs.Projects;
+using DevProject.Application.Queries.Projects;
 
 namespace DevProject.Application.Interfaces;
 
@@ -9,6 +10,10 @@ public interface IProjectService
         CancellationToken cancellationToken = default);
 
     Task<IEnumerable<ProjectResponse>> GetAllAsync(
+        CancellationToken cancellationToken = default);
+
+    Task<IEnumerable<ProjectResponse>> SearchAsync(
+        ProjectSearchQuery query,
         CancellationToken cancellationToken = default);
 
     Task<ProjectResponse> CreateAsync(
